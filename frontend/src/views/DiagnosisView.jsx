@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getSebrRules, inferSebr } from "../api/sebrApi.js";
 import CheckboxField from "../components/CheckboxField.jsx";
 import InferenceResultModal from "../components/InferenceResultModal.jsx";
 import PageHeader from "../components/PageHeader.jsx";
@@ -28,61 +29,16 @@ const initialFormData = {
   ...Object.fromEntries(symptoms.map((symptom) => [symptom.name, false])),
 };
 
-const mockResult = "compatible_con_dengue";
-
-const mockActivatedRules = [
-  {
-    id: "R1",
-    name: "Temperatura elevada",
-    expression: "IF temperatura >= 38 THEN fiebre",
-  },
-  {
-    id: "R2",
-    name: "Cuadro febril",
-    expression: "IF fiebre AND posible_cuadro_febril THEN cuadro_febril",
-  },
-  {
-    id: "R3",
-    name: "Sospecha dengue",
-    expression: "IF caso_evaluable AND sangrado == true THEN sospecha_dengue",
-  },
-  {
-    id: "R4",
-    name: "Compatible con dengue",
-    expression:
-      "IF sospecha_dengue AND dolor_muscular_o_articular == true THEN compatible_con_dengue",
-  },
-];
-
-const mockRules = [
-  {
-    id: "R1",
-    name: "Detección de fiebre",
-    expression: "IF temperatura >= 38 THEN fiebre",
-  },
-  {
-    id: "R2",
-    name: "Cuadro febril",
-    expression: "IF fiebre AND posible_cuadro_febril THEN cuadro_febril",
-  },
-  {
-    id: "R3",
-    name: "Compatible con COVID-19",
-    expression:
-      "IF cuadro_respiratorio AND perdida_gusto_u_olfato == true THEN compatible_con_covid",
-  },
-  {
-    id: "R4",
-    name: "Compatible con dengue",
-    expression:
-      "IF sospecha_dengue AND dolor_muscular_o_articular == true THEN compatible_con_dengue",
-  },
-];
-
 function DiagnosisView() {
   const [formData, setFormData] = useState(initialFormData);
   const [isInferenceModalOpen, setIsInferenceModalOpen] = useState(false);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [inferenceResult, setInferenceResult] = useState(null);
+  const [isInferring, setIsInferring] = useState(false);
+  const [inferenceError, setInferenceError] = useState("");
+  const [rules, setRules] = useState([]);
+  const [isLoadingRules, setIsLoadingRules] = useState(false);
+  const [rulesError, setRulesError] = useState("");
 
   const temperature = Number(formData.temperature);
   const hasTemperature = formData.temperature !== "";
@@ -105,20 +61,44 @@ function DiagnosisView() {
     }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     if (!isTemperatureValid) {
       return;
     }
 
-    // TODO: Send this data to the backend when the diagnosis endpoint is available.
-    const submittedData = {
-      ...formData,
-      temperature,
-    };
+    setIsInferring(true);
+    setInferenceError("");
 
-    console.log(submittedData);
+    try {
+      const response = await inferSebr(mapFormDataToInferencePayload(formData, temperature));
+      setInferenceResult(response);
+      setIsInferenceModalOpen(true);
+    } catch (error) {
+      setInferenceError(error.message);
+    } finally {
+      setIsInferring(false);
+    }
+  }
+
+  async function handleOpenRulesModal() {
+    setIsRulesModalOpen(true);
+    await loadRules();
+  }
+
+  async function loadRules() {
+    setIsLoadingRules(true);
+    setRulesError("");
+
+    try {
+      const response = await getSebrRules();
+      setRules(response.rules ?? []);
+    } catch (error) {
+      setRulesError(error.message);
+    } finally {
+      setIsLoadingRules(false);
+    }
   }
 
   return (
@@ -181,40 +161,58 @@ function DiagnosisView() {
           <div className="flex flex-col justify-end gap-3 border-t border-zinc-800 pt-5 sm:flex-row">
             <button
               type="button"
-              onClick={() => setIsRulesModalOpen(true)}
+              onClick={handleOpenRulesModal}
               className="rounded-md border border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-medium text-zinc-300 transition duration-200 hover:border-zinc-700 hover:bg-[#171717] hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
             >
               Consultar reglas
             </button>
-            {/* TODO: Remove this temporary test button after backend integration. */}
-            <button
-              type="button"
-              onClick={() => setIsInferenceModalOpen(true)}
-              className="rounded-md border border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-medium text-zinc-300 transition duration-200 hover:border-zinc-700 hover:bg-[#171717] hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
-            >
-              Ver resultado simulado
-            </button>
-            <PrimaryButton type="submit" disabled={!isTemperatureValid}>
-              Confirmar datos
+            <PrimaryButton type="submit" disabled={!isTemperatureValid || isInferring}>
+              {isInferring ? "Procesando..." : "Confirmar datos"}
             </PrimaryButton>
           </div>
+          {inferenceError ? (
+            <p className="text-right text-sm text-red-300">{inferenceError}</p>
+          ) : null}
         </form>
       </Panel>
 
       <InferenceResultModal
         isOpen={isInferenceModalOpen}
         onClose={() => setIsInferenceModalOpen(false)}
-        result={mockResult}
-        activatedRules={mockActivatedRules}
+        result={inferenceResult?.result}
+        activatedRules={inferenceResult?.activated_rules ?? []}
       />
 
       <RulesModal
         isOpen={isRulesModalOpen}
         onClose={() => setIsRulesModalOpen(false)}
-        rules={mockRules}
+        rules={rules}
+        isLoading={isLoadingRules}
+        error={rulesError}
+        onRuleCreated={loadRules}
       />
     </div>
   );
+}
+
+function mapFormDataToInferencePayload(formData, temperature) {
+  return {
+    temperature,
+    headache: formData.headache,
+    cough: formData.cough,
+    fatigue: formData.fatigue,
+    loss_of_taste_or_smell: formData.lossOfTasteOrSmell,
+    breathing_difficulty: formData.breathingDifficulty,
+    chest_pain: formData.chestPain,
+    sore_throat: formData.soreThroat,
+    pain_behind_eyes: formData.eyePain,
+    vomiting: formData.vomiting,
+    muscle_or_joint_pain: formData.muscleOrJointPain,
+    nausea: formData.nausea,
+    bleeding: formData.bleeding,
+    close_contact: formData.covidContact,
+    had_covid_before: formData.hadCovidBefore,
+  };
 }
 
 export default DiagnosisView;

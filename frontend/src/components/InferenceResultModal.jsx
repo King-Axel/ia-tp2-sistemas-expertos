@@ -3,7 +3,7 @@ import { CheckCircle2, X } from "lucide-react";
 const resultLabels = {
   compatible_con_dengue: "Compatible con dengue",
   compatible_con_covid: "Compatible con COVID-19",
-  sin_conclusion: "Sin conclusión",
+  no_puede_concluir: "Sin conclusión",
 };
 
 function InferenceResultModal({ isOpen, onClose, result, activatedRules }) {
@@ -49,8 +49,7 @@ function InferenceResultModal({ isOpen, onClose, result, activatedRules }) {
         <div className="space-y-5 px-5 py-5">
           <div className="rounded-md border border-zinc-800 bg-[#0d0d0d] p-4">
             <p className="text-sm leading-6 text-zinc-400">
-              Resultado simulado del motor basado en reglas. La integración con el backend
-              reemplazará estos datos de prueba.
+              Resultado calculado por el motor SEBR con la base de hechos enviada.
             </p>
           </div>
 
@@ -59,7 +58,8 @@ function InferenceResultModal({ isOpen, onClose, result, activatedRules }) {
               Reglas activadas
             </p>
             <div className="grid gap-2">
-              {activatedRules.map((rule) => (
+              {activatedRules.length > 0 ? (
+                activatedRules.map((rule) => (
                 <article
                   key={rule.id}
                   className="rounded-md border border-zinc-800 bg-[#0d0d0d] px-3 py-3"
@@ -77,7 +77,12 @@ function InferenceResultModal({ isOpen, onClose, result, activatedRules }) {
                     {rule.expression}
                   </p>
                 </article>
-              ))}
+                ))
+              ) : (
+                <p className="rounded-md border border-zinc-800 bg-[#0d0d0d] px-3 py-3 text-sm text-zinc-500">
+                  No se activaron reglas.
+                </p>
+              )}
             </div>
           </div>
         </div>

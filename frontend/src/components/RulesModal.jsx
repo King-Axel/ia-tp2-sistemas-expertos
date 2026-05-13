@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import { createSebrRule } from "../api/sebrApi.js";
 
-function RulesModal({ isOpen, onClose, rules }) {
+function RulesModal({ isOpen, onClose, rules, isLoading, error, onRuleCreated }) {
   const [isAddingRule, setIsAddingRule] = useState(false);
   const [ruleForm, setRuleForm] = useState({
     name: "",
     expression: "",
   });
+  const [isCreatingRule, setIsCreatingRule] = useState(false);
+  const [createError, setCreateError] = useState("");
 
   if (!isOpen) {
     return null;
@@ -28,18 +31,26 @@ function RulesModal({ isOpen, onClose, rules }) {
   function handleCancelAddRule() {
     setIsAddingRule(false);
     setRuleForm({ name: "", expression: "" });
+    setCreateError("");
   }
 
-  function handleSubmitRule(event) {
+  async function handleSubmitRule(event) {
     event.preventDefault();
+    setIsCreatingRule(true);
+    setCreateError("");
 
-    // TODO: Send this new rule to the backend when the rules endpoint is available.
-    console.log({
-      name: ruleForm.name,
-      expression: ruleForm.expression,
-    });
-
-    handleCancelAddRule();
+    try {
+      await createSebrRule({
+        name: ruleForm.name,
+        expression: ruleForm.expression,
+      });
+      handleCancelAddRule();
+      await onRuleCreated();
+    } catch (error) {
+      setCreateError(error.message);
+    } finally {
+      setIsCreatingRule(false);
+    }
   }
 
   return (
@@ -75,8 +86,21 @@ function RulesModal({ isOpen, onClose, rules }) {
         </div>
 
         <div className="space-y-6 overflow-y-auto px-5 py-5">
-          <div className="grid gap-2">
-            {rules.map((rule) => (
+          {isLoading ? (
+            <p className="rounded-md border border-zinc-800 bg-[#0d0d0d] px-3 py-3 text-sm text-zinc-500">
+              Cargando reglas...
+            </p>
+          ) : null}
+
+          {error ? (
+            <p className="rounded-md border border-red-900/60 bg-red-950/20 px-3 py-3 text-sm text-red-300">
+              {error}
+            </p>
+          ) : null}
+
+          {!isLoading && !error ? (
+            <div className="grid gap-2">
+              {rules.map((rule) => (
               <article
                 key={rule.id}
                 className="rounded-md border border-zinc-800 bg-[#0d0d0d] px-3 py-3"
@@ -93,8 +117,9 @@ function RulesModal({ isOpen, onClose, rules }) {
                   {rule.expression}
                 </p>
               </article>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : null}
 
           <div className="rounded-lg border border-zinc-800 bg-[#0d0d0d]">
             <div className="flex items-center justify-between gap-4 border-b border-zinc-800 px-4 py-3">
@@ -167,11 +192,15 @@ function RulesModal({ isOpen, onClose, rules }) {
                   </button>
                   <button
                     type="submit"
+                    disabled={isCreatingRule}
                     className="rounded-md border border-zinc-700 bg-[#171717] px-4 py-2 text-sm font-medium text-zinc-50 transition duration-200 hover:border-zinc-600 hover:bg-[#1f1f1f] focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
                   >
-                    Guardar regla
+                    {isCreatingRule ? "Guardando..." : "Guardar regla"}
                   </button>
                 </div>
+                {createError ? (
+                  <p className="text-sm text-red-300">{createError}</p>
+                ) : null}
               </form>
             )}
           </div>
