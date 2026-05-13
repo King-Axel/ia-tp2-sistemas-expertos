@@ -1,0 +1,1 @@
+# Project InstructionsAlways follow the files inside ./skills.General rules:- Code in English.- UI text in Spanish.- Keep the code simple.- Do not implement backend unless explicitly requested.- Use React + Vite + TailwindCSS for frontend.
