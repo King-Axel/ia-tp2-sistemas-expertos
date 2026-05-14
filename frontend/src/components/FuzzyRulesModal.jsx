@@ -1,6 +1,12 @@
 import { X } from "lucide-react";
 
-function FuzzyRulesModal({ isOpen, onClose, rules }) {
+function FuzzyRulesModal({
+  isOpen,
+  onClose,
+  rules,
+  title = "Reglas de riego difuso",
+  description = "Consulta las reglas cargadas para el sistema difuso de riego.",
+}) {
   if (!isOpen) {
     return null;
   }
@@ -24,10 +30,10 @@ function FuzzyRulesModal({ isOpen, onClose, rules }) {
               Base de reglas
             </p>
             <h2 className="mt-1 font-[var(--font-display)] text-xl font-semibold text-zinc-50">
-              Reglas de riego difuso
+              {title}
             </h2>
             <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-400">
-              Consulta las reglas cargadas para el sistema difuso de riego.
+              {description}
             </p>
           </div>
 
