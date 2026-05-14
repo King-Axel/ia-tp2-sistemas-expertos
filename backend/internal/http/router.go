@@ -26,6 +26,10 @@ func NewRouter() *gin.Engine {
 	router.GET("/seld1/rules", seld1Handler.ListRules)
 	router.POST("/seld1/infer", seld1Handler.Infer)
 
+	seld2Handler := NewSELD2Handler(seldapplication.NewVentilationService())
+	router.GET("/seld2/rules", seld2Handler.ListRules)
+	router.POST("/seld2/infer", seld2Handler.Infer)
+
 	return router
 }
 

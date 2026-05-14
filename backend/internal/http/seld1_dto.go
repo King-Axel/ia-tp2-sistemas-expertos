@@ -20,7 +20,7 @@ type SELD1InferenceResponse struct {
 	CrispOutputValue  float64                       `json:"crisp_output_value"`
 	DominantOutputSet string                        `json:"dominant_output_set"`
 	InputMemberships  map[string][]SetMembershipDTO `json:"input_memberships"`
-	ActivatedRules    []SELD1ActivatedRuleResponse  `json:"activated_rules"`
+	ActivatedRules    []ActivatedRuleDTO            `json:"activated_rules"`
 	AggregatedOutput  []AggregatedOutputPoint       `json:"aggregated_output"`
 	OutputVariableKey string                        `json:"output_variable_key"`
 }
@@ -30,7 +30,7 @@ type SetMembershipDTO struct {
 	Degree float64 `json:"degree"`
 }
 
-type SELD1ActivatedRuleResponse struct {
+type ActivatedRuleDTO struct {
 	RuleID            string  `json:"rule_id"`
 	RuleName          string  `json:"rule_name"`
 	Expression        string  `json:"expression"`

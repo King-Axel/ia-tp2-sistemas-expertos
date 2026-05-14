@@ -122,11 +122,11 @@ func mapSELD1InputMembershipsResponse(
 
 func mapSELD1ActivatedRulesResponse(
 	activatedRules []domain.ActivatedRule,
-) []SELD1ActivatedRuleResponse {
-	response := make([]SELD1ActivatedRuleResponse, 0, len(activatedRules))
+) []ActivatedRuleDTO {
+	response := make([]ActivatedRuleDTO, 0, len(activatedRules))
 
 	for _, rule := range activatedRules {
-		response = append(response, SELD1ActivatedRuleResponse{
+		response = append(response, ActivatedRuleDTO{
 			RuleID:            rule.RuleID,
 			RuleName:          rule.RuleName,
 			Expression:        rule.Expression,
