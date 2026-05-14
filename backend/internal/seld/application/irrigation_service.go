@@ -32,6 +32,10 @@ func NewIrrigationService() *IrrigationService {
 	}
 }
 
+func (service *IrrigationService) Rules() []domain.Rule {
+	return append([]domain.Rule(nil), service.rules...)
+}
+
 func (service *IrrigationService) InferIrrigation(input IrrigationInput) (IrrigationResult, error) {
 	crispInputs := service.clampedInputs(input)
 

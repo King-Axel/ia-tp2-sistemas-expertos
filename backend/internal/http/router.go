@@ -6,6 +6,7 @@ import (
 	"iteraciones/backend/internal/sebr/knowledge"
 	"iteraciones/backend/internal/sebr/service"
 	"iteraciones/backend/internal/sebr/store"
+	seldapplication "iteraciones/backend/internal/seld/application"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +21,10 @@ func NewRouter() *gin.Engine {
 	router.GET("/sebr/rules", sebrHandler.ListRules)
 	router.POST("/sebr/rules", sebrHandler.CreateRule)
 	router.POST("/sebr/infer", sebrHandler.Infer)
+
+	seld1Handler := NewSELD1Handler(seldapplication.NewIrrigationService())
+	router.GET("/seld1/rules", seld1Handler.ListRules)
+	router.POST("/seld1/infer", seld1Handler.Infer)
 
 	return router
 }
