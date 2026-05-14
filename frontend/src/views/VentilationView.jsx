@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getSeld2Rules, inferSeld2 } from "../api/seld2Api.js";
 import FuzzyInferenceModal from "../components/FuzzyInferenceModal.jsx";
 import FuzzyInputCard from "../components/FuzzyInputCard.jsx";
 import FuzzyRulesModal from "../components/FuzzyRulesModal.jsx";
@@ -8,6 +9,7 @@ import PageHeader from "../components/PageHeader.jsx";
 const fuzzyVariables = [
   {
     id: "ambientTemperature",
+    backendKey: "plant_temperature",
     label: "Temperatura ambiente",
     unit: "°C",
     universe: [0, 60],
@@ -22,6 +24,7 @@ const fuzzyVariables = [
   },
   {
     id: "gasConcentration",
+    backendKey: "gas_concentration",
     label: "Concentración de gases/humo",
     unit: "%",
     universe: [0, 100],
@@ -53,51 +56,43 @@ const initialValues = Object.fromEntries(
   fuzzyVariables.map((variable) => [variable.id, variable.initialValue])
 );
 
-const mockRules = [
-  {
-    id: "R1",
-    expression: "IF temperatura ES baja AND gases ES seguro THEN velocidad ES mínima",
-  },
-  {
-    id: "R2",
-    expression: "IF temperatura ES normal AND gases ES seguro THEN velocidad ES baja",
-  },
-  {
-    id: "R3",
-    expression: "IF temperatura ES alta AND gases ES moderado THEN velocidad ES media",
-  },
-  {
-    id: "R4",
-    expression: "IF temperatura ES crítica OR gases ES peligroso THEN velocidad ES máxima",
-  },
-  {
-    id: "R5",
-    expression: "IF gases ES peligroso THEN velocidad ES máxima",
-  },
-];
-
-const mockInferenceResult = {
-  value: 62,
-  interpretation: "Media",
+const variableLabels = {
+  plant_temperature: "Temperatura ambiente",
+  gas_concentration: "Concentración de gases/humo",
 };
 
-const mockActivatedRules = [
-  {
-    id: "R1",
-    expression: "IF temperatura ES normal AND gases ES seguro THEN velocidad ES baja",
-    activationDegree: 0.45,
+const inputSetLabels = {
+  plant_temperature: {
+    low: "Baja",
+    normal: "Normal",
+    high: "Alta",
+    critical: "Crítica",
   },
-  {
-    id: "R2",
-    expression: "IF temperatura ES alta OR gases ES peligroso THEN velocidad ES alta",
-    activationDegree: 0.72,
+  gas_concentration: {
+    safe: "Seguro",
+    moderate: "Moderado",
+    dangerous: "Peligroso",
   },
-];
+};
+
+const outputSetLabels = {
+  minimum: "Mínima / Reposo",
+  low: "Baja",
+  medium: "Media",
+  high: "Alta",
+  maximum: "Máxima",
+};
 
 function VentilationView() {
   const [values, setValues] = useState(initialValues);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isInferenceModalOpen, setIsInferenceModalOpen] = useState(false);
+  const [rules, setRules] = useState([]);
+  const [inferenceResult, setInferenceResult] = useState(null);
+  const [isLoadingRules, setIsLoadingRules] = useState(false);
+  const [isInferring, setIsInferring] = useState(false);
+  const [rulesError, setRulesError] = useState("");
+  const [inferenceError, setInferenceError] = useState("");
 
   function handleValueChange(variableId, value) {
     setValues((currentValues) => ({
@@ -106,9 +101,34 @@ function VentilationView() {
     }));
   }
 
-  function handleInfer() {
-    // TODO: Send these fuzzy input values to the backend when inference integration is available.
-    console.log(values);
+  async function handleOpenRulesModal() {
+    setIsRulesModalOpen(true);
+    setRulesError("");
+    setIsLoadingRules(true);
+
+    try {
+      const response = await getSeld2Rules();
+      setRules(response.rules ?? []);
+    } catch (error) {
+      setRulesError(error.message);
+    } finally {
+      setIsLoadingRules(false);
+    }
+  }
+
+  async function handleInfer() {
+    setInferenceError("");
+    setIsInferring(true);
+
+    try {
+      const response = await inferSeld2(mapValuesToInferencePayload(values));
+      setInferenceResult(response);
+      setIsInferenceModalOpen(true);
+    } catch (error) {
+      setInferenceError(error.message);
+    } finally {
+      setIsInferring(false);
+    }
   }
 
   return (
@@ -124,34 +144,34 @@ function VentilationView() {
             Acciones del sistema
           </p>
           <p className="mt-1 text-sm text-zinc-400">
-            Consulta reglas, ejecuta una inferencia futura o revisa datos simulados.
+            Consulta reglas o ejecuta una inferencia con los valores actuales.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
-            onClick={() => setIsRulesModalOpen(true)}
+            onClick={handleOpenRulesModal}
+            disabled={isLoadingRules}
             className="rounded-md border border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-medium text-zinc-300 transition duration-200 hover:border-zinc-700 hover:bg-[#171717] hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
           >
-            Consultar reglas
-          </button>
-          {/* TODO: Remove this temporary test button after backend inference integration. */}
-          <button
-            type="button"
-            onClick={() => setIsInferenceModalOpen(true)}
-            className="rounded-md border border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-medium text-zinc-300 transition duration-200 hover:border-zinc-700 hover:bg-[#171717] hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
-          >
-            Ver inferencia simulada
+            {isLoadingRules ? "Cargando..." : "Consultar reglas"}
           </button>
           <button
             type="button"
             onClick={handleInfer}
+            disabled={isInferring}
             className="rounded-md border border-zinc-700 bg-[#171717] px-4 py-2.5 text-sm font-medium text-zinc-50 transition duration-200 hover:border-zinc-600 hover:bg-[#1f1f1f] focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
           >
-            Inferir
+            {isInferring ? "Infiriendo..." : "Inferir"}
           </button>
         </div>
       </section>
+
+      {inferenceError ? (
+        <p className="rounded-md border border-red-900/60 bg-red-950/20 px-4 py-3 text-sm text-red-300">
+          {inferenceError}
+        </p>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-2">
         {fuzzyVariables.map((variable) => (
@@ -168,21 +188,39 @@ function VentilationView() {
       <FuzzyRulesModal
         isOpen={isRulesModalOpen}
         onClose={() => setIsRulesModalOpen(false)}
-        rules={mockRules}
+        rules={rules}
         title="Reglas de ventilación industrial"
-        description="Consulta las reglas simuladas para el sistema difuso de ventilación industrial."
+        description="Consulta las reglas cargadas para el sistema difuso de ventilación industrial."
+        isLoading={isLoadingRules}
+        error={rulesError}
       />
 
-      <FuzzyInferenceModal
-        isOpen={isInferenceModalOpen}
-        onClose={() => setIsInferenceModalOpen(false)}
-        variables={fuzzyVariables}
-        values={values}
-        outputResult={mockInferenceResult}
-        activatedRules={mockActivatedRules}
-      />
+      {inferenceResult ? (
+        <FuzzyInferenceModal
+          isOpen={isInferenceModalOpen}
+          onClose={() => setIsInferenceModalOpen(false)}
+          variables={fuzzyVariables}
+          values={values}
+          outputResult={{
+            value: inferenceResult.crisp_output_value,
+            interpretation: outputSetLabels[inferenceResult.dominant_output_set],
+          }}
+          activatedRules={inferenceResult.activated_rules ?? []}
+          inferenceResult={inferenceResult}
+          variableLabels={variableLabels}
+          inputSetLabels={inputSetLabels}
+          outputSetLabels={outputSetLabels}
+        />
+      ) : null}
     </div>
   );
+}
+
+function mapValuesToInferencePayload(values) {
+  return {
+    plant_temperature: values.ambientTemperature,
+    gas_concentration: values.gasConcentration,
+  };
 }
 
 export default VentilationView;
