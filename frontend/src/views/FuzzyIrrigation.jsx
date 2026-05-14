@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getSeld1Rules, inferSeld1 } from "../api/seld1Api.js";
 import FuzzyInputCard from "../components/FuzzyInputCard.jsx";
 import FuzzyInferenceModal from "../components/FuzzyInferenceModal.jsx";
 import FuzzyRulesModal from "../components/FuzzyRulesModal.jsx";
@@ -9,6 +10,7 @@ import { formatTime } from "../utils/membershipFunctions.js";
 const fuzzyVariables = [
   {
     id: "soilHumidity",
+    backendKey: "soil_humidity",
     label: "Humedad del suelo",
     unit: "%",
     universe: [0, 100],
@@ -24,6 +26,7 @@ const fuzzyVariables = [
   },
   {
     id: "ambientTemperature",
+    backendKey: "ambient_temperature",
     label: "Temperatura ambiente",
     unit: "°C",
     universe: [0, 45],
@@ -39,6 +42,7 @@ const fuzzyVariables = [
   },
   {
     id: "timeOfDay",
+    backendKey: "time_of_day",
     label: "Horario del día",
     unit: "",
     inputUnit: "min",
@@ -75,53 +79,54 @@ const initialValues = Object.fromEntries(
   fuzzyVariables.map((variable) => [variable.id, variable.initialValue])
 );
 
-const mockRules = [
-  {
-    id: "R01",
-    expression:
-      "IF humedad ES seco\nAND temperatura ES calurosa\nTHEN apertura ES apertura_completa",
-  },
-  {
-    id: "R02",
-    expression:
-      "IF humedad ES poco_seco\nAND horario ES tarde\nTHEN apertura ES mucha_apertura",
-  },
-  {
-    id: "R03",
-    expression:
-      "IF humedad ES adecuado\nAND temperatura ES templada\nTHEN apertura ES apertura_moderada",
-  },
-  {
-    id: "R04",
-    expression:
-      "IF humedad ES humedo\nOR humedad ES saturado\nTHEN apertura ES cerrada",
-  },
-];
-
-const mockInferenceResult = {
-  value: 68,
-  interpretation: "Mucha apertura",
+const variableLabels = {
+  soil_humidity: "Humedad del suelo",
+  ambient_temperature: "Temperatura ambiente",
+  time_of_day: "Horario del día",
 };
 
-const mockActivatedRules = [
-  {
-    id: "R14",
-    expression:
-      "IF humedad ES poco_seco\nAND temperatura ES calurosa\nTHEN apertura ES mucha_apertura",
-    activationDegree: 0.72,
+const inputSetLabels = {
+  soil_humidity: {
+    very_low: "Muy baja",
+    low: "Baja",
+    adequate: "Adecuada",
+    somewhat_high: "Algo alta",
+    elevated: "Elevada",
   },
-  {
-    id: "R18",
-    expression:
-      "IF horario ES tarde\nAND humedad ES adecuado\nTHEN apertura ES apertura_moderada",
-    activationDegree: 0.41,
+  ambient_temperature: {
+    very_cold: "Muy fría",
+    cold: "Fría",
+    mild: "Templada",
+    warm: "Cálida",
+    sweltering: "Sofocante",
   },
-];
+  time_of_day: {
+    dawn: "Madrugada",
+    morning: "Mañana",
+    midday: "Mediodía",
+    afternoon: "Tarde",
+    night: "Noche",
+  },
+};
+
+const outputSetLabels = {
+  none: "Nada",
+  low: "Baja",
+  moderate: "Moderada",
+  high: "Mucha",
+  complete: "Completa",
+};
 
 function FuzzyIrrigation() {
   const [values, setValues] = useState(initialValues);
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
   const [isInferenceModalOpen, setIsInferenceModalOpen] = useState(false);
+  const [rules, setRules] = useState([]);
+  const [inferenceResult, setInferenceResult] = useState(null);
+  const [isLoadingRules, setIsLoadingRules] = useState(false);
+  const [isInferring, setIsInferring] = useState(false);
+  const [rulesError, setRulesError] = useState("");
+  const [inferenceError, setInferenceError] = useState("");
 
   function handleValueChange(variableId, value) {
     setValues((currentValues) => ({
@@ -130,9 +135,34 @@ function FuzzyIrrigation() {
     }));
   }
 
-  function handleInfer() {
-    // TODO: Send these fuzzy input values to the backend when inference integration is available.
-    console.log(values);
+  async function handleOpenRulesModal() {
+    setIsRulesModalOpen(true);
+    setRulesError("");
+    setIsLoadingRules(true);
+
+    try {
+      const response = await getSeld1Rules();
+      setRules(response.rules ?? []);
+    } catch (error) {
+      setRulesError(error.message);
+    } finally {
+      setIsLoadingRules(false);
+    }
+  }
+
+  async function handleInfer() {
+    setInferenceError("");
+    setIsInferring(true);
+
+    try {
+      const response = await inferSeld1(mapValuesToInferencePayload(values));
+      setInferenceResult(response);
+      setIsInferenceModalOpen(true);
+    } catch (error) {
+      setInferenceError(error.message);
+    } finally {
+      setIsInferring(false);
+    }
   }
 
   return (
@@ -148,34 +178,34 @@ function FuzzyIrrigation() {
             Acciones del sistema
           </p>
           <p className="mt-1 text-sm text-zinc-400">
-            Consulta reglas, ejecuta una inferencia futura o revisa datos simulados.
+            Consulta reglas o ejecuta una inferencia con los valores actuales.
           </p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
-            onClick={() => setIsRulesModalOpen(true)}
+            onClick={handleOpenRulesModal}
+            disabled={isLoadingRules}
             className="rounded-md border border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-medium text-zinc-300 transition duration-200 hover:border-zinc-700 hover:bg-[#171717] hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
           >
-            Consultar reglas
-          </button>
-          {/* TODO: Remove this temporary test button after backend inference integration. */}
-          <button
-            type="button"
-            onClick={() => setIsInferenceModalOpen(true)}
-            className="rounded-md border border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-medium text-zinc-300 transition duration-200 hover:border-zinc-700 hover:bg-[#171717] hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
-          >
-            Ver inferencia simulada
+            {isLoadingRules ? "Cargando..." : "Consultar reglas"}
           </button>
           <button
             type="button"
             onClick={handleInfer}
+            disabled={isInferring}
             className="rounded-md border border-zinc-700 bg-[#171717] px-4 py-2.5 text-sm font-medium text-zinc-50 transition duration-200 hover:border-zinc-600 hover:bg-[#1f1f1f] focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
           >
-            Inferir
+            {isInferring ? "Infiriendo..." : "Inferir"}
           </button>
         </div>
       </section>
+
+      {inferenceError ? (
+        <p className="rounded-md border border-red-900/60 bg-red-950/20 px-4 py-3 text-sm text-red-300">
+          {inferenceError}
+        </p>
+      ) : null}
 
       <div className="grid gap-5 xl:grid-cols-2">
         {fuzzyVariables.map((variable) => (
@@ -192,19 +222,38 @@ function FuzzyIrrigation() {
       <FuzzyRulesModal
         isOpen={isRulesModalOpen}
         onClose={() => setIsRulesModalOpen(false)}
-        rules={mockRules}
+        rules={rules}
+        isLoading={isLoadingRules}
+        error={rulesError}
       />
 
-      <FuzzyInferenceModal
-        isOpen={isInferenceModalOpen}
-        onClose={() => setIsInferenceModalOpen(false)}
-        variables={fuzzyVariables}
-        values={values}
-        outputResult={mockInferenceResult}
-        activatedRules={mockActivatedRules}
-      />
+      {inferenceResult ? (
+        <FuzzyInferenceModal
+          isOpen={isInferenceModalOpen}
+          onClose={() => setIsInferenceModalOpen(false)}
+          variables={fuzzyVariables}
+          values={values}
+          outputResult={{
+            value: inferenceResult.crisp_output_value,
+            interpretation: outputSetLabels[inferenceResult.dominant_output_set],
+          }}
+          activatedRules={inferenceResult.activated_rules ?? []}
+          inferenceResult={inferenceResult}
+          variableLabels={variableLabels}
+          inputSetLabels={inputSetLabels}
+          outputSetLabels={outputSetLabels}
+        />
+      ) : null}
     </div>
   );
+}
+
+function mapValuesToInferencePayload(values) {
+  return {
+    soil_humidity: values.soilHumidity,
+    ambient_temperature: values.ambientTemperature,
+    time_of_day: values.timeOfDay,
+  };
 }
 
 export default FuzzyIrrigation;

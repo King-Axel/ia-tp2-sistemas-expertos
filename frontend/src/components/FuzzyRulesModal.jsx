@@ -6,6 +6,8 @@ function FuzzyRulesModal({
   rules,
   title = "Reglas de riego difuso",
   description = "Consulta las reglas cargadas para el sistema difuso de riego.",
+  isLoading = false,
+  error = "",
 }) {
   if (!isOpen) {
     return null;
@@ -17,7 +19,7 @@ function FuzzyRulesModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-6"
+      className="scrollbar-dark fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-6"
       onClick={onClose}
     >
       <div
@@ -48,17 +50,27 @@ function FuzzyRulesModal({
         </div>
 
         <div className="grid gap-2 overflow-y-auto px-5 py-5">
-          {rules.map((rule) => (
-            <article
-              key={rule.id}
-              className="rounded-md border border-zinc-800 bg-[#0d0d0d] px-3 py-3"
-            >
-              <p className="font-mono text-[11px] font-semibold text-zinc-500">{rule.id}</p>
-              <p className="mt-2 whitespace-pre-line rounded-md border border-zinc-800 bg-[#090909] px-3 py-2 font-mono text-xs leading-5 text-zinc-400">
-                {rule.expression}
-              </p>
-            </article>
-          ))}
+          {isLoading ? (
+            <p className="rounded-md border border-zinc-800 bg-[#0d0d0d] px-3 py-3 text-sm text-zinc-500">
+              Cargando reglas...
+            </p>
+          ) : error ? (
+            <p className="rounded-md border border-red-900/60 bg-red-950/20 px-3 py-3 text-sm text-red-300">
+              {error}
+            </p>
+          ) : (
+            rules.map((rule) => (
+              <article
+                key={rule.id}
+                className="rounded-md border border-zinc-800 bg-[#0d0d0d] px-3 py-3"
+              >
+                <p className="font-mono text-[11px] font-semibold text-zinc-500">{rule.id}</p>
+                <p className="mt-2 whitespace-pre-line rounded-md border border-zinc-800 bg-[#090909] px-3 py-2 font-mono text-xs leading-5 text-zinc-400">
+                  {rule.expression}
+                </p>
+              </article>
+            ))
+          )}
         </div>
       </div>
     </div>
