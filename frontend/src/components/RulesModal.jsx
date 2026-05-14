@@ -55,7 +55,7 @@ function RulesModal({ isOpen, onClose, rules, isLoading, error, onRuleCreated })
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-6"
+      className="scrollbar-dark fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-6"
       onClick={onClose}
     >
       <div

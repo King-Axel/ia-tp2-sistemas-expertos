@@ -15,11 +15,11 @@ const fuzzyVariables = [
     step: 1,
     initialValue: 42,
     sets: [
-      { name: "Seco", range: [0, 25] },
-      { name: "Poco seco", range: [20, 45] },
-      { name: "Adecuado", range: [40, 70] },
-      { name: "Húmedo", range: [65, 85] },
-      { name: "Saturado", range: [80, 100] },
+      { name: "Muy baja", range: [0, 25] },
+      { name: "Baja", range: [20, 44] },
+      { name: "Adecuada", range: [40, 70] },
+      { name: "Algo alta", range: [65, 85] },
+      { name: "Elevada", range: [80, 100] },
     ],
   },
   {
@@ -31,10 +31,10 @@ const fuzzyVariables = [
     initialValue: 28,
     sets: [
       { name: "Muy fría", range: [0, 10] },
-      { name: "Fría", range: [5, 18] },
+      { name: "Fría", range: [6, 18] },
       { name: "Templada", range: [15, 30] },
-      { name: "Calurosa", range: [27, 38] },
-      { name: "Muy calurosa", range: [35, 45] },
+      { name: "Cálida", range: [27, 38] },
+      { name: "Sofocante", range: [35, 45] },
     ],
   },
   {
@@ -42,7 +42,7 @@ const fuzzyVariables = [
     label: "Horario del día",
     unit: "",
     inputUnit: "min",
-    universe: [0, 1339],
+    universe: [0, 1439],
     step: 1,
     initialValue: 870,
     formatValue: formatTime,
@@ -52,7 +52,7 @@ const fuzzyVariables = [
       { name: "Mañana", range: [300, 690] },
       { name: "Mediodía", range: [660, 810] },
       { name: "Tarde", range: [780, 1140] },
-      { name: "Noche", range: [1110, 1339] },
+      { name: "Noche", range: [1111, 1439] },
     ],
   },
 ];
@@ -63,11 +63,11 @@ const outputVariable = {
   unit: "%",
   universe: [0, 100],
   sets: [
-    { name: "Cerrada", range: [0, 2] },
-    { name: "Poca apertura", range: [1.5, 37.5] },
-    { name: "Apertura moderada", range: [35, 75] },
-    { name: "Mucha apertura", range: [70, 92] },
-    { name: "Apertura completa", range: [90, 100] },
+    { name: "Nada", range: [0, 2] },
+    { name: "Baja", range: [1.5, 37.5] },
+    { name: "Moderada", range: [35, 75] },
+    { name: "Mucha", range: [70, 92] },
+    { name: "Completa", range: [90, 100] },
   ],
 };
 

@@ -23,7 +23,7 @@ function InferenceResultModal({ isOpen, onClose, result, activatedRules }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-lg border border-zinc-800 bg-[#111111]"
+        className="scrollbar-dark flex-col max-h-[calc(100vh-3rem)] overflow-y-auto w-full max-w-2xl rounded-lg border border-zinc-800 bg-[#111111]"
         onClick={handlePanelClick}
       >
         <div className="flex items-start justify-between gap-4 border-b border-zinc-800 px-5 py-4">
