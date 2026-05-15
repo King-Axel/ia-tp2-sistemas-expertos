@@ -7,7 +7,7 @@ function PageHeader({ title, description }) {
       <h1 className="max-w-4xl font-[var(--font-display)] text-3xl font-semibold tracking-tight text-[var(--color-text)] md:text-[34px] md:leading-tight">
         {title}
       </h1>
-      <p className="mt-4 max-w-3xl text-sm leading-6 text-[var(--color-text-muted)]">
+      <p className="mt-4 max-w-3xl text-sml leading-6 text-[var(--color-text-muted)]">
         {description}
       </p>
     </header>

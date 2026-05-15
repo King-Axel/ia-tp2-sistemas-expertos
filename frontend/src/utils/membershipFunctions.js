@@ -135,7 +135,7 @@ export function createMembershipSeries(variable, value, options = {}) {
     symbolSize: 5,
     showSymbol: false,
     lineStyle: {
-      width: 2,
+      width: 3.5,
     },
     emphasis: {
       focus: "series",

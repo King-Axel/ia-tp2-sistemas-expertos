@@ -33,11 +33,16 @@
   /* --color-chart-3: #d4d4d8; */
   /* --color-chart-4: #60a5fa; */
   /* --color-chart-5: #0070f3; */
-  --color-chart-1: #42a636;
-  --color-chart-2: #99b85d;
-  --color-chart-3: #d5af3e;
-  --color-chart-4: #b15307;
-  --color-chart-5: #d82448;
+  /* --color-chart-1: #42a636; */
+  /* --color-chart-2: #99b85d; */
+  /* --color-chart-3: #d5af3e; */
+  /* --color-chart-4: #b15307; */
+  /* --color-chart-5: #d82448; */
+  --color-chart-1: #961dc6;
+  --color-chart-2: #c11350;
+  --color-chart-3: #d5a820;
+  --color-chart-4: #13ade4;
+  --color-chart-5: #1a0c97;
   --color-chart-grid: #1f1f1f;
   --color-scrollbar: rgba(100, 116, 139, 0.5);
   --color-scrollbar-thumb: rgba(100, 116, 139, 0.45);

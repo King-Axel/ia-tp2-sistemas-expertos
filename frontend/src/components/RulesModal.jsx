@@ -103,7 +103,7 @@ function RulesModal({ isOpen, onClose, rules, isLoading, error, onRuleCreated })
               {rules.map((rule) => (
               <article
                 key={rule.id}
-                className="rounded-md border border-[var(--color-border)] bg-[var(--color-page-panel)] px-3 py-3"
+                className="text-[14px] rounded-md border border-[var(--color-border)] bg-[var(--color-page-panel)] px-3 py-3"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-2 py-0.5 font-mono text-[11px] text-[var(--color-text-muted)]">
@@ -113,7 +113,7 @@ function RulesModal({ isOpen, onClose, rules, isLoading, error, onRuleCreated })
                     {rule.name}
                   </h3>
                 </div>
-                <p className="mt-2 rounded-md border border-[var(--color-border)] bg-[var(--color-page)] px-3 py-2 font-mono text-xs leading-5 text-[var(--color-text-subtle)]">
+                <p className="text-[16px] mt-2 rounded-md border border-[var(--color-border)] bg-[var(--color-page)] px-3 py-2 font-mono text-xs leading-5 text-[var(--color-text-subtle)]">
                   {rule.expression}
                 </p>
               </article>

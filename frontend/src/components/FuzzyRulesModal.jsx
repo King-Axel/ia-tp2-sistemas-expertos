@@ -64,8 +64,8 @@ function FuzzyRulesModal({
                 key={rule.id}
                 className="rounded-md border border-[var(--color-border)] bg-[var(--color-page-panel)] px-3 py-3"
               >
-                <p className="font-mono text-[11px] font-semibold text-[var(--color-text-subtle)]">{rule.id}</p>
-                <p className="mt-2 whitespace-pre-line rounded-md border border-[var(--color-border)] bg-[var(--color-page)] px-3 py-2 font-mono text-xs leading-5 text-[var(--color-text-muted)]">
+                <p className="font-mono text-[14px] font-semibold text-[var(--color-text-subtle)]">{rule.id}</p>
+                <p className="text-[16px] mt-2 whitespace-pre-line rounded-md border border-[var(--color-border)] bg-[var(--color-page)] px-3 py-2 font-mono text-xs leading-5 text-[var(--color-text-muted)]">
                   {rule.expression}
                 </p>
               </article>
