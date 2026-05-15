@@ -122,7 +122,11 @@ export function createSelectedMembershipPoints(variable, value) {
 }
 
 export function createMembershipSeries(variable, value, options = {}) {
-  const { showSelectedValue = true } = options;
+  const {
+    showSelectedValue = true,
+    selectedColor = "var(--color-accent)",
+    selectedTextColor = "var(--color-text-soft)",
+  } = options;
   const membershipSeries = variable.sets.map((fuzzySet, index) => ({
     name: fuzzySet.name,
     type: "line",
@@ -154,14 +158,14 @@ export function createMembershipSeries(variable, value, options = {}) {
         [value, 1],
       ],
       lineStyle: {
-        color: "#0070f3",
+        color: selectedColor,
         width: 2,
         type: "dashed",
       },
       label: {
         show: true,
         formatter: variable.formatValue ? variable.formatValue(value) : `${value}${variable.unit}`,
-        color: "#d4d4d8",
+        color: selectedTextColor,
         fontSize: 11,
         position: "top",
       },
@@ -176,14 +180,14 @@ export function createMembershipSeries(variable, value, options = {}) {
       symbolSize: 9,
       data: createSelectedMembershipPoints(variable, value),
       itemStyle: {
-        color: "#0070f3",
-        borderColor: "#d4d4d8",
+        color: selectedColor,
+        borderColor: selectedTextColor,
         borderWidth: 1,
       },
       label: {
         show: true,
         formatter: (params) => Number(params.value[1]).toFixed(2),
-        color: "#d4d4d8",
+        color: selectedTextColor,
         fontSize: 10,
         position: "top",
       },

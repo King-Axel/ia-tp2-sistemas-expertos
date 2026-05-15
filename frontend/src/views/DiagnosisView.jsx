@@ -113,11 +113,11 @@ function DiagnosisView() {
           <div>
             <label
               htmlFor="temperature"
-              className="mb-2 block font-[var(--font-display)] text-[13px] font-semibold text-zinc-200"
+              className="mb-2 block font-[var(--font-display)] text-[13px] font-semibold text-[var(--color-text-soft)]"
             >
               Temperatura
             </label>
-            <div className="flex max-w-xs items-center rounded-md border border-zinc-800 bg-[#0d0d0d] transition duration-200 focus-within:border-[#0070f3] focus-within:ring-2 focus-within:ring-[#0070f3]/20">
+            <div className="flex max-w-xs items-center rounded-md border border-[var(--color-border)] bg-[var(--color-page-panel)] transition duration-200 focus-within:border-[var(--color-accent)] focus-within:ring-2 focus-within:ring-[var(--color-accent-subtle)]">
               <input
                 id="temperature"
                 type="number"
@@ -128,21 +128,21 @@ function DiagnosisView() {
                 value={formData.temperature}
                 onChange={handleTemperatureChange}
                 placeholder="37.5"
-                className="h-11 w-full bg-transparent px-3 font-mono text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
+                className="h-11 w-full bg-transparent px-3 font-mono text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-faint)]"
               />
-              <span className="border-l border-zinc-800 px-3 font-[var(--font-display)] text-xs font-semibold text-zinc-500">
+              <span className="border-l border-[var(--color-border)] px-3 font-[var(--font-display)] text-xs font-semibold text-[var(--color-text-subtle)]">
                 °C
               </span>
             </div>
             {hasTemperature && !isTemperatureValid ? (
-              <p className="mt-2 text-xs text-red-300">
+              <p className="mt-2 text-xs text-[var(--color-danger)]">
                 La temperatura debe estar entre 36 y 42.
               </p>
             ) : null}
           </div>
 
           <div>
-            <p className="mb-3 font-[var(--font-display)] text-[13px] font-semibold text-zinc-200">
+            <p className="mb-3 font-[var(--font-display)] text-[13px] font-semibold text-[var(--color-text-soft)]">
               Indicadores clínicos
             </p>
             <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
@@ -158,11 +158,11 @@ function DiagnosisView() {
             </div>
           </div>
 
-          <div className="flex flex-col justify-end gap-3 border-t border-zinc-800 pt-5 sm:flex-row">
+          <div className="flex flex-col justify-end gap-3 border-t border-[var(--color-border)] pt-5 sm:flex-row">
             <button
               type="button"
               onClick={handleOpenRulesModal}
-              className="rounded-md border border-zinc-800 bg-transparent px-4 py-2.5 text-sm font-medium text-zinc-300 transition duration-200 hover:border-zinc-700 hover:bg-[#171717] hover:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#0070f3]/35"
+              className="rounded-md border border-[var(--color-border)] bg-transparent px-4 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition duration-200 hover:border-[var(--color-border-hover)] hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-soft)]"
             >
               Consultar reglas
             </button>
@@ -171,7 +171,7 @@ function DiagnosisView() {
             </PrimaryButton>
           </div>
           {inferenceError ? (
-            <p className="text-right text-sm text-red-300">{inferenceError}</p>
+            <p className="text-right text-sm text-[var(--color-danger)]">{inferenceError}</p>
           ) : null}
         </form>
       </Panel>
